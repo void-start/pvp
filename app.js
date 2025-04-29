@@ -9,18 +9,6 @@ window.addEventListener("load", () => {
   const attackContainer = document.getElementById("attack-artifacts");
   const defenseContainer = document.getElementById("defense-artifacts");
 
-  const attackArtifacts = [
-    { name: "Меч", type: "physical", damage: 30 },
-    { name: "Огненный шар", type: "magical", damage: 40 },
-    { name: "Игла тьмы", type: "pure", damage: 50 },
-  ];
-
-  const defenseArtifacts = [
-    { name: "Щит", type: "physical", block: 100 },
-    { name: "Магический барьер", type: "magical", block: 100 },
-    { name: "Нейтрализатор", type: "pure", block: 100 },
-  ];
-
   let selectedAttack = null;
   let selectedDefense = null;
 
@@ -31,6 +19,19 @@ window.addEventListener("load", () => {
   let timer = null;
   let secondsLeft = 10;
 
+  const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
+
+  // Загружаем данные игрока с сервера
+  fetch(`api.php?telegram_id=${telegramId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.hp) {
+        player1HP = data.hp;
+        updateHP();
+      }
+    });
+
+  // Начало игры
   document.getElementById("start-btn").onclick = () => {
     app.style.display = "none";
     battle.style.display = "block";
@@ -42,6 +43,7 @@ window.addEventListener("load", () => {
     attackContainer.innerHTML = "";
     defenseContainer.innerHTML = "";
 
+    // Ваши артефакты
     attackArtifacts.forEach((artifact, idx) => {
       const div = document.createElement("div");
       div.className = "artifact";
@@ -105,13 +107,6 @@ window.addEventListener("load", () => {
     confirmSelection();
   }
 
-  function calculateDamage(attack, defense) {
-    if (attack.type === defense.type) {
-      return attack.damage * 0.1; // Защита против этого типа уменьшает урон
-    }
-    return attack.damage * 0.9; // Нет защиты от этого типа — больше урон
-  }
-
   function updateHP() {
     document.getElementById("player1-hp").innerText = player1HP;
     document.getElementById("player2-hp").innerText = player2HP;
@@ -150,20 +145,19 @@ window.addEventListener("load", () => {
   function resetGame() {
     player1HP = 100;
     player2HP = 100;
-    updateHP();
     currentTurn = 1;
-    selectedAttack = null;
-    selectedDefense = null;
+    updateHP();
     renderArtifacts();
     startTurnTimer();
   }
 
-  document.getElementById("confirm-btn").onclick = () => {
-    if (selectedAttack === null || selectedDefense === null) {
-      alert("⛔ Выбери оба артефакта или дождись автохода!");
-      return;
+  function calculateDamage(attack, defense) {
+    let damage = attack.damage;
+    if (attack.type === defense.type) {
+      damage *= 0.1;
+    } else {
+      damage *= 0.9;
     }
-
-    confirmSelection();
-  };
+    return damage;
+  }
 });
