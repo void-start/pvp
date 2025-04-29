@@ -1,44 +1,68 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PvP Арена</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PvP Arena</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@telegram-web-app/sdk@1.0.0-alpha.3/dist/telegram-web-app.js"></script>
 </head>
 <body>
-  <div id="app">
-    <h1>Добро пожаловать в PvP Арену</h1>
-    <button id="start-btn">Начать игру</button>
-    <button id="inventory-btn">Инвентарь</button>
-    <button id="shop-btn">Магазин</button>
-  </div>
 
-  <div id="battle-screen" style="display: none;">
-    <h2>Выбери артефакты</h2>
-    <div>
-      <h3>Атака:</h3>
-      <div class="artifact-list" id="attack-artifacts"></div>
-    </div>
-    <div>
-      <h3>Защита:</h3>
-      <div class="artifact-list" id="defense-artifacts"></div>
-    </div>
+<!-- Экран авторизации -->
+<div id="auth-screen" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <button id="auth-btn">Авторизоваться через Telegram</button>
+</div>
 
-    <p id="turn-timer">⏱️ Время на выбор: <span id="timer-countdown">10</span> сек</p>
-    <button id="confirm-btn">Подтвердить выбор</button>
+<!-- Экран игры -->
+<div id="game-screen" style="display: none;">
+    <!-- Игровой интерфейс здесь -->
+</div>
 
-    <div id="health">
-      <div>
-        <h3>Игрок 1 - HP: <span id="player1-hp">100</span></h3>
-      </div>
-      <div>
-        <h3>Игрок 2 - HP: <span id="player2-hp">100</span></h3>
-      </div>
-    </div>
-  </div>
+<script>
+    window.addEventListener("load", () => {
+        if (window.Telegram.WebApp) {
+            // Инициализация WebApp
+            Telegram.WebApp.expand();
+            Telegram.WebApp.ready();
+        }
 
-  <script src="app.js"></script>
+        const authBtn = document.getElementById("auth-btn");
+
+        authBtn.addEventListener("click", () => {
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            const data = {
+                id: user.id,
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
+                hash: Telegram.WebApp.initDataUnsafe.hash
+            };
+
+            // Отправляем данные на сервер
+            fetch('auth.php', {
+                method: 'POST',
+                body: JSON.stringify({ data: JSON.stringify(data) })
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                if (responseData.status === 'user_exists') {
+                    // Если пользователь существует, переключаемся на игровую сцену
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('game-screen').style.display = 'block';
+                } else if (responseData.status === 'new_user') {
+                    // Нового пользователя добавляем и показываем игру
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('game-screen').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка авторизации", error);
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
