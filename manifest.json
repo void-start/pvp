@@ -1,0 +1,9 @@
+{
+  "name": "PvP Арена",
+  "short_name": "PvP Arena",
+  "description": "Пошаговая PvP-арена с артефактами",
+  "icons": [],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait"
+}
