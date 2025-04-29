@@ -1,178 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PvP Arena</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@telegram-web-app/sdk@1.0.0-alpha.3/dist/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="login-screen">
+        <h1>Добро пожаловать в PvP-арену!</h1>
+        <button id="auth-button">Авторизоваться через Telegram</button>
+    </div>
 
-<!-- Экран авторизации -->
-<div id="auth-screen" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <button id="auth-btn">Авторизоваться через Telegram</button>
-</div>
+    <div id="game-screen" style="display: none;">
+        <h2>PvP Arena</h2>
+        <p>Текущий ход: <span id="timer-countdown">10</span> секунд</p>
 
-<!-- Экран игры -->
-<div id="game-screen" style="display: none;">
-    <h2>PvP Arena</h2>
-    <p>Текущий ход: <span id="timer-countdown">10</span> секунд</p>
-    <button id="start-battle">Начать битву</button>
-</div>
+        <div id="player-stats">
+            <p>Игрок 1: <span id="player1_hp">100</span> HP</p>
+            <p>Игрок 2: <span id="player2_hp">100</span> HP</p>
+        </div>
 
-<script>
-    let battleId = null; // ID текущей битвы
-    let player1HP = 100;
-    let player2HP = 100;
-    let currentTurn = 1;
+        <h3>Выбор артефакта</h3>
+        <div id="inventory">
+            <div class="artifact" id="attack-physical">
+                <p>Физическая атака</p>
+                <button class="choose-artifact" data-type="attack" data-subtype="physical">Выбрать</button>
+            </div>
+            <div class="artifact" id="attack-magical">
+                <p>Магическая атака</p>
+                <button class="choose-artifact" data-type="attack" data-subtype="magical">Выбрать</button>
+            </div>
+            <div class="artifact" id="attack-pure">
+                <p>Чистая атака</p>
+                <button class="choose-artifact" data-type="attack" data-subtype="pure">Выбрать</button>
+            </div>
+            <div class="artifact" id="defense-physical">
+                <p>Защита от физического урона</p>
+                <button class="choose-artifact" data-type="defense" data-subtype="physical">Выбрать</button>
+            </div>
+            <div class="artifact" id="defense-magical">
+                <p>Защита от магического урона</p>
+                <button class="choose-artifact" data-type="defense" data-subtype="magical">Выбрать</button>
+            </div>
+            <div class="artifact" id="defense-pure">
+                <p>Защита от чистого урона</p>
+                <button class="choose-artifact" data-type="defense" data-subtype="pure">Выбрать</button>
+            </div>
+        </div>
 
-    window.addEventListener("load", () => {
-        // Инициализация Telegram WebApp
-        if (window.Telegram.WebApp) {
-            Telegram.WebApp.expand();  // Открывает WebApp
-            Telegram.WebApp.ready();   // Уведомляет Telegram, что WebApp готов
-            console.log('WebApp инициализирован');
-        } else {
-            console.error('Telegram WebApp не инициализирован');
-        }
+        <button id="start-battle">Начать битву</button>
+    </div>
 
-        const authBtn = document.getElementById("auth-btn");
-
-        authBtn.addEventListener("click", () => {
-            const user = Telegram.WebApp.initDataUnsafe.user;
-            if (user) {
-                const data = {
-                    id: user.id,
-                    username: user.username,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
-                    hash: Telegram.WebApp.initDataUnsafe.hash
-                };
-
-                // Логирование для проверки данных
-                console.log("Данные пользователя: ", data);
-
-                // Отправляем данные на сервер
-                fetch('auth.php', {
-                    method: 'POST',
-                    body: JSON.stringify({ data: JSON.stringify(data) }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(responseData => {
-                    if (responseData.status === 'user_exists') {
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('game-screen').style.display = 'block';
-                    } else if (responseData.status === 'new_user') {
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('game-screen').style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.error("Ошибка авторизации", error);
-                });
-            } else {
-                console.error("Не удалось получить данные пользователя из Telegram");
-            }
-        });
-    });
-
-    // Кнопка начала битвы
-    document.getElementById("start-battle").addEventListener("click", () => {
-        startBattle(1, 2); // Начинаем битву, передавая IDs игроков
-    });
-
-    function startBattle(player1_id, player2_id) {
-        fetch('battle.php', {
-            method: 'POST',
-            body: JSON.stringify({
-                player1_id: player1_id,
-                player2_id: player2_id
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            battleId = data.battle_id;
-            console.log('Битва началась:', battleId);
-            startTurnTimer();
-        });
-    }
-
-    let timer = null;
-    let secondsLeft = 10;
-
-    function startTurnTimer() {
-        secondsLeft = 10;
-        document.getElementById("timer-countdown").innerText = secondsLeft;
-
-        timer = setInterval(() => {
-            secondsLeft--;
-            document.getElementById("timer-countdown").innerText = secondsLeft;
-
-            if (secondsLeft <= 0) {
-                clearInterval(timer);
-                autoSelect();
-            }
-        }, 1000);
-    }
-
-    function autoSelect() {
-        // Логика для автоматического выбора артефактов
-        // ...
-
-        // После хода обновляем состояние битвы
-        updateBattleState();
-
-        // Проверяем, кто победил
-        if (player1HP <= 0 || player2HP <= 0) {
-            const winner_id = player1HP > 0 ? 1 : 2;
-            endBattle(winner_id);
-        }
-    }
-
-    function updateBattleState() {
-        fetch('battle.php', {
-            method: 'POST',
-            body: JSON.stringify({
-                battle_id: battleId,
-                player1_hp: player1HP,
-                player2_hp: player2HP,
-                current_turn: currentTurn
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Состояние битвы обновлено');
-        });
-    }
-
-    function endBattle(winner_id) {
-        fetch('battle.php', {
-            method: 'POST',
-            body: JSON.stringify({
-                battle_id: battleId,
-                winner_id: winner_id
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Битва завершена, победитель:', winner_id);
-        });
-    }
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
