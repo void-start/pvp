@@ -1,116 +1,83 @@
-let player1HP = 100;
-let player2HP = 100;
-let selectedAttack = null;
-let selectedDefense = null;
-let secondsLeft = 10;
-let battleId = null;
-let timer = null;
+let userId = null; // Идентификатор пользователя
+let battleData = null; // Данные о битве
 
-// Авторизация через Telegram
-document.getElementById('auth-button').addEventListener('click', () => {
-    Telegram.WebApp.Login();
+document.getElementById('auth-btn').addEventListener('click', async () => {
+    // Здесь должна быть логика для авторизации через Telegram.
+    // Временно генерируем случайный user_id
+    userId = Math.floor(Math.random() * 10000);
+    console.log("Пользователь авторизован с userId:", userId);
+
+    // Показываем игровую секцию
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('game-section').style.display = 'block';
+
+    // Создаем сессию битвы
+    await startBattle(userId);
 });
 
-Telegram.WebApp.onEvent('auth', (user) => {
-    console.log('Авторизован пользователь:', user);
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
-    // Создание битвы на сервере
-    startNewBattle(user.id);
-});
-
-function startNewBattle(userId) {
-    fetch('battle.php', {
+async function startBattle(userId) {
+    const response = await fetch('/start_battle', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        battleId = data.battle_id;
-        console.log('Битва начата:', battleId);
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: userId })
     });
+    const data = await response.json();
+    console.log("Сессия битвы создана с ID:", data.battle_id);
+    battleData = data.battle_id; // Сохраняем ID сессии
 }
 
-document.querySelectorAll('.choose-artifact').forEach(button => {
-    button.addEventListener('click', () => {
-        const type = button.dataset.type;
-        const subtype = button.dataset.subtype;
+async function makeMove(attack, defense) {
+    if (!battleData) return;
 
-        if (type === 'attack') {
-            selectedAttack = subtype;
-        } else if (type === 'defense') {
-            selectedDefense = subtype;
-        }
-
-        updateBattleState();
-        startTurnTimer();
+    const response = await fetch('/make_move', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ attack, defense })
     });
-});
+    const data = await response.json();
+    console.log("Результаты хода:", data);
 
-function startTurnTimer() {
-    secondsLeft = 10;
-    document.getElementById("timer-countdown").innerText = secondsLeft;
+    document.getElementById('player1-hp').textContent = data.player1_hp;
+    document.getElementById('player2-hp').textContent = data.player2_hp;
+}
 
-    if (timer) clearInterval(timer);
+// Обработчики для кнопок атак и защиты
+document.getElementById('attack-physical').addEventListener('click', () => makeMove('physical', 'physical'));
+document.getElementById('attack-magical').addEventListener('click', () => makeMove('magical', 'magical'));
+document.getElementById('attack-pure').addEventListener('click', () => makeMove('pure', 'pure'));
+document.getElementById('defense-physical').addEventListener('click', () => makeMove('physical', 'physical'));
+document.getElementById('defense-magical').addEventListener('click', () => makeMove('magical', 'magical'));
+document.getElementById('defense-pure').addEventListener('click', () => makeMove('pure', 'pure'));
 
-    timer = setInterval(() => {
-        secondsLeft--;
-        document.getElementById("timer-countdown").innerText = secondsLeft;
+// Таймер выбора хода
+let timer = 10;
+let timerInterval;
 
-        if (secondsLeft <= 0) {
-            clearInterval(timer);
-            autoSelect();
+function startTimer() {
+    timerInterval = setInterval(() => {
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            // Если время вышло, отправляем случайный ход
+            makeMove(randomAttack(), randomDefense());
+        } else {
+            document.getElementById('timer-count').textContent = timer;
+            timer--;
         }
     }, 1000);
 }
 
-function autoSelect() {
-    if (!selectedAttack) selectedAttack = 'physical';
-    if (!selectedDefense) selectedDefense = 'physical';
-    updateBattleState();
+function randomAttack() {
+    const attacks = ['physical', 'magical', 'pure'];
+    return attacks[Math.floor(Math.random() * attacks.length)];
 }
 
-function updateBattleState() {
-    fetch('battle.php', {
-        method: 'POST',
-        body: JSON.stringify({
-            battle_id: battleId,
-            attack: selectedAttack,
-            defense: selectedDefense,
-            player1_hp: player1HP,
-            player2_hp: player2HP
-        }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        player1HP -= data.damage1;
-        player2HP -= data.damage2;
-        document.getElementById('player1_hp').innerText = player1HP;
-        document.getElementById('player2_hp').innerText = player2HP;
-        checkVictory();
-    });
+function randomDefense() {
+    const defenses = ['physical', 'magical', 'pure'];
+    return defenses[Math.floor(Math.random() * defenses.length)];
 }
 
-function checkVictory() {
-    if (player1HP <= 0 || player2HP <= 0) {
-        const winner = player1HP > 0 ? 'Игрок 1' : 'Игрок 2';
-        alert(`${winner} победил!`);
-        endBattle();
-    }
-}
-
-function endBattle() {
-    fetch('battle.php', {
-        method: 'POST',
-        body: JSON.stringify({ battle_id: battleId, winner: player1HP > 0 ? 1 : 2 }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Игра завершена.');
-        document.getElementById('game-screen').style.display = 'none';
-        document.getElementById('login-screen').style.display = 'block';
-    });
-}
+startTimer(); // Стартуем таймер сразу после загрузки страницы
