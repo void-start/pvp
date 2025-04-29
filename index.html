@@ -3,53 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PvP Arena</title>
+    <title>Пошаговая PvP-арена</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="login-screen">
-        <h1>Добро пожаловать в PvP-арену!</h1>
-        <button id="auth-button">Авторизоваться через Telegram</button>
+    <div id="auth-section">
+        <button id="auth-btn">Авторизоваться через Telegram</button>
     </div>
 
-    <div id="game-screen" style="display: none;">
-        <h2>PvP Arena</h2>
-        <p>Текущий ход: <span id="timer-countdown">10</span> секунд</p>
-
-        <div id="player-stats">
-            <p>Игрок 1: <span id="player1_hp">100</span> HP</p>
-            <p>Игрок 2: <span id="player2_hp">100</span> HP</p>
+    <div id="game-section" style="display: none;">
+        <div id="battle-info">
+            <p>ХП Игрока 1: <span id="player1-hp">100</span></p>
+            <p>ХП Игрока 2: <span id="player2-hp">100</span></p>
         </div>
-
-        <h3>Выбор артефакта</h3>
-        <div id="inventory">
-            <div class="artifact" id="attack-physical">
-                <p>Физическая атака</p>
-                <button class="choose-artifact" data-type="attack" data-subtype="physical">Выбрать</button>
-            </div>
-            <div class="artifact" id="attack-magical">
-                <p>Магическая атака</p>
-                <button class="choose-artifact" data-type="attack" data-subtype="magical">Выбрать</button>
-            </div>
-            <div class="artifact" id="attack-pure">
-                <p>Чистая атака</p>
-                <button class="choose-artifact" data-type="attack" data-subtype="pure">Выбрать</button>
-            </div>
-            <div class="artifact" id="defense-physical">
-                <p>Защита от физического урона</p>
-                <button class="choose-artifact" data-type="defense" data-subtype="physical">Выбрать</button>
-            </div>
-            <div class="artifact" id="defense-magical">
-                <p>Защита от магического урона</p>
-                <button class="choose-artifact" data-type="defense" data-subtype="magical">Выбрать</button>
-            </div>
-            <div class="artifact" id="defense-pure">
-                <p>Защита от чистого урона</p>
-                <button class="choose-artifact" data-type="defense" data-subtype="pure">Выбрать</button>
-            </div>
+        <div id="artifact-selection">
+            <button id="attack-physical" class="attack-btn">Атака (Физический)</button>
+            <button id="attack-magical" class="attack-btn">Атака (Магический)</button>
+            <button id="attack-pure" class="attack-btn">Атака (Чистый)</button>
+            <button id="defense-physical" class="defense-btn">Защита (Физический)</button>
+            <button id="defense-magical" class="defense-btn">Защита (Магический)</button>
+            <button id="defense-pure" class="defense-btn">Защита (Чистый)</button>
         </div>
-
-        <button id="start-battle">Начать битву</button>
+        <div id="timer">
+            <p>Время на ход: <span id="timer-count">10</span> секунд</p>
+        </div>
     </div>
 
     <script src="script.js"></script>
