@@ -1,64 +1,22 @@
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #121212;
-  color: white;
-  text-align: center;
-  padding: 20px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#login-screen, #game-screen {
+    margin-top: 50px;
 }
 
 button {
-  padding: 12px 24px;
-  font-size: 16px;
-  margin: 10px;
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #5c6bc0;
-}
-
-.artifact-list {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .artifact {
-  border: 2px solid white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  background-color: #2a2a44;
-  cursor: pointer;
-  user-select: none;
-  min-width: 100px;
+    margin: 10px;
 }
 
-.artifact.selected {
-  border-color: limegreen;
-}
-
-#turn-timer {
-  margin: 10px 0;
-  font-size: 18px;
-}
-
-#health {
-  margin-bottom: 20px;
-}
-
-#health h3 {
-  font-size: 18px;
-  margin: 0;
-}
-
-#health div {
-  margin: 10px 0;
-  font-size: 20px;
+.artifact p {
+    margin: 5px 0;
 }
