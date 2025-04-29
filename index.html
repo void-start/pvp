@@ -1,21 +1,35 @@
-<!-- Меню (оставь как есть) -->
-<div id="app">
-  <h1>Добро пожаловать в PvP Арену</h1>
-  <button id="start-btn">Начать игру</button>
-  <button id="inventory-btn">Инвентарь</button>
-  <button id="shop-btn">Магазин</button>
-</div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PvP Арена</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <h1>Добро пожаловать в PvP Арену</h1>
+    <button id="start-btn">Начать игру</button>
+    <button id="inventory-btn">Инвентарь</button>
+    <button id="shop-btn">Магазин</button>
+  </div>
 
-<!-- Новый экран битвы -->
-<div id="battle-screen" style="display: none;">
-  <h2>Выбери артефакты</h2>
-  <div>
-    <h3>Атака:</h3>
-    <div class="artifact-list" id="attack-artifacts"></div>
+  <div id="battle-screen" style="display: none;">
+    <h2>Выбери артефакты</h2>
+    <div>
+      <h3>Атака:</h3>
+      <div class="artifact-list" id="attack-artifacts"></div>
+    </div>
+    <div>
+      <h3>Защита:</h3>
+      <div class="artifact-list" id="defense-artifacts"></div>
+    </div>
+
+    <p id="turn-timer">⏱️ Время на выбор: <span id="timer-countdown">10</span> сек</p>
+    <button id="confirm-btn">Подтвердить выбор</button>
   </div>
-  <div>
-    <h3>Защита:</h3>
-    <div class="artifact-list" id="defense-artifacts"></div>
-  </div>
-  <button id="confirm-btn">Подтвердить выбор</button>
-</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
