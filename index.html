@@ -16,13 +16,19 @@
 
 <!-- Экран игры -->
 <div id="game-screen" style="display: none;">
-    <!-- Игровой интерфейс здесь -->
+    <h2>PvP Arena</h2>
+    <p>Текущий ход: <span id="timer-countdown">10</span> секунд</p>
+    <button id="start-battle">Начать битву</button>
 </div>
 
 <script>
+    let battleId = null; // ID текущей битвы
+    let player1HP = 100;
+    let player2HP = 100;
+    let currentTurn = 1;
+
     window.addEventListener("load", () => {
         if (window.Telegram.WebApp) {
-            // Инициализация WebApp
             Telegram.WebApp.expand();
             Telegram.WebApp.ready();
         }
@@ -48,11 +54,9 @@
             .then(response => response.json())
             .then(responseData => {
                 if (responseData.status === 'user_exists') {
-                    // Если пользователь существует, переключаемся на игровую сцену
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('game-screen').style.display = 'block';
                 } else if (responseData.status === 'new_user') {
-                    // Нового пользователя добавляем и показываем игру
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('game-screen').style.display = 'block';
                 }
@@ -62,6 +66,97 @@
             });
         });
     });
+
+    document.getElementById("start-battle").addEventListener("click", () => {
+        startBattle(1, 2); // Начинаем битву, передавая IDs игроков
+    });
+
+    function startBattle(player1_id, player2_id) {
+        fetch('battle.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                player1_id: player1_id,
+                player2_id: player2_id
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            battleId = data.battle_id;
+            console.log('Битва началась:', battleId);
+            startTurnTimer();
+        });
+    }
+
+    let timer = null;
+    let secondsLeft = 10;
+
+    function startTurnTimer() {
+        secondsLeft = 10;
+        document.getElementById("timer-countdown").innerText = secondsLeft;
+
+        timer = setInterval(() => {
+            secondsLeft--;
+            document.getElementById("timer-countdown").innerText = secondsLeft;
+
+            if (secondsLeft <= 0) {
+                clearInterval(timer);
+                autoSelect();
+            }
+        }, 1000);
+    }
+
+    function autoSelect() {
+        // Логика для автоматического выбора артефактов
+        // ...
+
+        // После хода обновляем состояние битвы
+        updateBattleState();
+
+        // Проверяем, кто победил
+        if (player1HP <= 0 || player2HP <= 0) {
+            const winner_id = player1HP > 0 ? 1 : 2;
+            endBattle(winner_id);
+        }
+    }
+
+    function updateBattleState() {
+        fetch('battle.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                battle_id: battleId,
+                player1_hp: player1HP,
+                player2_hp: player2HP,
+                current_turn: currentTurn
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Состояние битвы обновлено');
+        });
+    }
+
+    function endBattle(winner_id) {
+        fetch('battle.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                battle_id: battleId,
+                winner_id: winner_id
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Битва завершена, победитель:', winner_id);
+        });
+    }
 </script>
 
 </body>

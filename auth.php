@@ -1,4 +1,7 @@
 <?php
+header('Content-Type: application/json');
+include('db.php');
+
 // Получаем данные от Telegram WebApp
 $data = json_decode($_POST['data'], true);
 
