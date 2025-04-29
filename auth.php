@@ -5,8 +5,11 @@ include('db.php');
 // Получаем данные от Telegram WebApp
 $data = json_decode($_POST['data'], true);
 
+// Логирование полученных данных
+file_put_contents('log.txt', "Данные от Telegram: " . print_r($data, true), FILE_APPEND);
+
 // Проверяем подпись (важно для безопасности)
-$token = "7372700929:AAFW8Nadu1KPLaRRnq2uMDJQPFwK-SjJ7ig"; // Замените на ваш токен
+$token = "YOUR_BOT_TOKEN"; // Замените на ваш токен
 $hash = $data['auth_date'] . $data['id'] . $data['first_name'] . $data['last_name'] . $data['username'];
 
 $check_hash = hash_hmac('sha256', $hash, $token);

@@ -28,45 +28,60 @@
     let currentTurn = 1;
 
     window.addEventListener("load", () => {
+        // Инициализация Telegram WebApp
         if (window.Telegram.WebApp) {
-            Telegram.WebApp.expand();
-            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();  // Открывает WebApp
+            Telegram.WebApp.ready();   // Уведомляет Telegram, что WebApp готов
+            console.log('WebApp инициализирован');
+        } else {
+            console.error('Telegram WebApp не инициализирован');
         }
 
         const authBtn = document.getElementById("auth-btn");
 
         authBtn.addEventListener("click", () => {
             const user = Telegram.WebApp.initDataUnsafe.user;
-            const data = {
-                id: user.id,
-                username: user.username,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
-                hash: Telegram.WebApp.initDataUnsafe.hash
-            };
+            if (user) {
+                const data = {
+                    id: user.id,
+                    username: user.username,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
+                    hash: Telegram.WebApp.initDataUnsafe.hash
+                };
 
-            // Отправляем данные на сервер
-            fetch('auth.php', {
-                method: 'POST',
-                body: JSON.stringify({ data: JSON.stringify(data) })
-            })
-            .then(response => response.json())
-            .then(responseData => {
-                if (responseData.status === 'user_exists') {
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('game-screen').style.display = 'block';
-                } else if (responseData.status === 'new_user') {
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('game-screen').style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error("Ошибка авторизации", error);
-            });
+                // Логирование для проверки данных
+                console.log("Данные пользователя: ", data);
+
+                // Отправляем данные на сервер
+                fetch('auth.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ data: JSON.stringify(data) }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(responseData => {
+                    if (responseData.status === 'user_exists') {
+                        document.getElementById('auth-screen').style.display = 'none';
+                        document.getElementById('game-screen').style.display = 'block';
+                    } else if (responseData.status === 'new_user') {
+                        document.getElementById('auth-screen').style.display = 'none';
+                        document.getElementById('game-screen').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка авторизации", error);
+                });
+            } else {
+                console.error("Не удалось получить данные пользователя из Telegram");
+            }
         });
     });
 
+    // Кнопка начала битвы
     document.getElementById("start-battle").addEventListener("click", () => {
         startBattle(1, 2); // Начинаем битву, передавая IDs игроков
     });
