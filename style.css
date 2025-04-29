@@ -1,22 +1,33 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
     text-align: center;
 }
 
-#login-screen, #game-screen {
+#auth-section {
     margin-top: 50px;
 }
 
 button {
     padding: 10px 20px;
     font-size: 16px;
+    margin: 10px;
     cursor: pointer;
 }
 
-.artifact {
-    margin: 10px;
+#battle-info {
+    margin: 20px;
 }
 
-.artifact p {
-    margin: 5px 0;
+.attack-btn, .defense-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.attack-btn:hover, .defense-btn:hover {
+    background-color: #45a049;
+}
+
+#timer {
+    margin-top: 30px;
 }
