@@ -9,12 +9,25 @@ window.addEventListener("load", () => {
   const attackContainer = document.getElementById("attack-artifacts");
   const defenseContainer = document.getElementById("defense-artifacts");
 
-  const attackArtifacts = ["Меч", "Огненный шар", "Игла тьмы"];
-  const defenseArtifacts = ["Щит", "Магический барьер", "Нейтрализатор"];
+  const attackArtifacts = [
+    { name: "Меч", type: "physical", damage: 30 },
+    { name: "Огненный шар", type: "magical", damage: 40 },
+    { name: "Игла тьмы", type: "pure", damage: 50 },
+  ];
+
+  const defenseArtifacts = [
+    { name: "Щит", type: "physical", block: 100 },
+    { name: "Магический барьер", type: "magical", block: 100 },
+    { name: "Нейтрализатор", type: "pure", block: 100 },
+  ];
 
   let selectedAttack = null;
   let selectedDefense = null;
 
+  let player1HP = 100;
+  let player2HP = 100;
+
+  let currentTurn = 1;
   let timer = null;
   let secondsLeft = 10;
 
@@ -29,10 +42,10 @@ window.addEventListener("load", () => {
     attackContainer.innerHTML = "";
     defenseContainer.innerHTML = "";
 
-    attackArtifacts.forEach((name, idx) => {
+    attackArtifacts.forEach((artifact, idx) => {
       const div = document.createElement("div");
       div.className = "artifact";
-      div.innerText = name;
+      div.innerText = artifact.name;
       div.onclick = () => {
         selectedAttack = idx;
         highlightSelection(attackContainer, idx);
@@ -40,10 +53,10 @@ window.addEventListener("load", () => {
       attackContainer.appendChild(div);
     });
 
-    defenseArtifacts.forEach((name, idx) => {
+    defenseArtifacts.forEach((artifact, idx) => {
       const div = document.createElement("div");
       div.className = "artifact";
-      div.innerText = name;
+      div.innerText = artifact.name;
       div.onclick = () => {
         selectedDefense = idx;
         highlightSelection(defenseContainer, idx);
@@ -92,15 +105,57 @@ window.addEventListener("load", () => {
     confirmSelection();
   }
 
+  function calculateDamage(attack, defense) {
+    if (attack.type === defense.type) {
+      return attack.damage * 0.1; // Защита против этого типа уменьшает урон
+    }
+    return attack.damage * 0.9; // Нет защиты от этого типа — больше урон
+  }
+
+  function updateHP() {
+    document.getElementById("player1-hp").innerText = player1HP;
+    document.getElementById("player2-hp").innerText = player2HP;
+  }
+
   function confirmSelection() {
     stopTurnTimer();
 
     const attack = attackArtifacts[selectedAttack];
     const defense = defenseArtifacts[selectedDefense];
 
-    alert(`✅ Выбран ход:\n🗡 Атака: ${attack}\n🛡 Защита: ${defense}`);
+    let damage = calculateDamage(attack, defense);
 
-    // Здесь будет отправка данных на сервер
+    if (currentTurn === 1) {
+      player2HP -= damage;
+      alert(`Игрок 1 атакует: ${attack.name} наносит ${damage} урона`);
+      currentTurn = 2;
+    } else {
+      player1HP -= damage;
+      alert(`Игрок 2 атакует: ${attack.name} наносит ${damage} урона`);
+      currentTurn = 1;
+    }
+
+    updateHP();
+
+    if (player1HP <= 0 || player2HP <= 0) {
+      setTimeout(() => {
+        alert(player1HP <= 0 ? "Игрок 2 Победил!" : "Игрок 1 Победил!");
+        resetGame();
+      }, 500);
+    } else {
+      startTurnTimer();
+    }
+  }
+
+  function resetGame() {
+    player1HP = 100;
+    player2HP = 100;
+    updateHP();
+    currentTurn = 1;
+    selectedAttack = null;
+    selectedDefense = null;
+    renderArtifacts();
+    startTurnTimer();
   }
 
   document.getElementById("confirm-btn").onclick = () => {

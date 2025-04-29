@@ -48,3 +48,17 @@ button:hover {
   margin: 10px 0;
   font-size: 18px;
 }
+
+#health {
+  margin-bottom: 20px;
+}
+
+#health h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+#health div {
+  margin: 10px 0;
+  font-size: 20px;
+}
